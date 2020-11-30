@@ -1,6 +1,31 @@
 #' @export
-start_app <- function(lesson="/home/siebrenf/git/edu/learnr.proto/inst/tutorials/test/test.Rmd") {
-  #' start lesson as shiny markdown
+start_app <- function(name="test", package = "learnr.proto") {
+  #' start tutorial from package as shiny markdown
+
+  tutorial_path <- system.file("tutorials", name, package = package)
+
+  # Doesn't always start if the html exists.
+  # (this may causes issues with multiple users)
+  rmd_file = file.path(tutorial_path, list.files(tutorial_path, pattern = "*.Rmd")[1])
+  rmarkdown::shiny_prerendered_clean(rmd_file)
+
+  # start shiny app from code here
+  rmarkdown::run(
+    file = NULL,
+    dir = tutorial_path,
+    # opens the lesson in a new browser tab
+    # shiny_args = list(launch.browser = TRUE)
+    shiny_args = list(
+      launch.browser = (interactive() || identical(Sys.getenv("LEARNR_INTERACTIVE", "0"), "1"))
+    )
+  )
+
+}
+
+#' @export
+start_dev_app <- function(lesson="/home/siebrenf/git/edu/learnr.proto/inst/tutorials/test") {
+  #' start dev lesson as shiny markdown
+  #' works without reinstalling the package first
 
   # Doesn't always start if the html exists.
   # (this may causes issues with multiple users)
@@ -8,33 +33,33 @@ start_app <- function(lesson="/home/siebrenf/git/edu/learnr.proto/inst/tutorials
 
   # start shiny app from code here
   rmarkdown::run(
-    lesson,
-    shiny_args = list(launch.browser = TRUE)  # opens the lesson in a new browser tab
+    file = NULL,
+    dir = lesson,
+    shiny_args = list(launch.browser = TRUE)
   )
 
 }
 
-#' @export
-dev.a <- function() {
-  #' dev only
-  #' update lesson and run as shiny markdown
-
-  libpath = "/home/siebrenf/miniconda3/envs/learnr/lib/R/library"
-  lesson <- "/home/siebrenf/git/edu/learnr.proto/inst/tutorials/test/test.Rmd"
-
-  set_lib_paths(libpath)
-
-  # for some reason it doesn't always start if the html exists.
-  # this may causes issues with multiple users.
-  rmarkdown::shiny_prerendered_clean(lesson)
-
-  # start shiny app from code here
-  rmarkdown::run(
-    lesson,
-    shiny_args = list(launch.browser = TRUE)  # opens the lesson in a new browser tab
-  )
-
-}
+# dev.a <- function() {
+#   #' dev only
+#   #' update lesson and run as shiny markdown
+#
+#   libpath = "/home/siebrenf/miniconda3/envs/learnr/lib/R/library"
+#   lesson <- "/home/siebrenf/git/edu/learnr.proto/inst/tutorials/test/test.Rmd"
+#
+#   learnr.dashboard::set_lib_paths(libpath)
+#
+#   # for some reason it doesn't always start if the html exists.
+#   # this may causes issues with multiple users.
+#   rmarkdown::shiny_prerendered_clean(lesson)
+#
+#   # start shiny app from code here
+#   rmarkdown::run(
+#     lesson,
+#     shiny_args = list(launch.browser = TRUE)  # opens the lesson in a new browser tab
+#   )
+#
+# }
 
 # dev.a2 <- function() {
 #   # copy lesson to some dir, then run there
