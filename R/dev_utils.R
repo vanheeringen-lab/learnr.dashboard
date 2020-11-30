@@ -4,25 +4,25 @@
 ################################################
 
 
-# setup_dashboard <- function() {
-#   pkg = "/home/siebrenf/git/edu/learnr.dashboard"
-#   libpath = "/home/siebrenf/miniconda3/envs/learnr/lib/R/library"
-#
-#   learnr.dashboard::set_lib_paths(libpath)
-#   learnr.dashboard::install_to_lib(pkg, libpath)
-#
-#   detach("package:learnr.dashboard", unload=TRUE)
-#   library(learnr.dashboard)
-# }
+setup_dashboard <- function() {
+  pkg = "/home/siebrenf/git/edu/learnr.dashboard"
+  libpath = "/home/siebrenf/miniconda3/envs/learnr/lib/R/library"
 
-# setup_proto <- function() {
-#   pkg = "/home/siebrenf/git/edu/learnr.proto"
-#   libpath = "/home/siebrenf/miniconda3/envs/learnr/lib/R/library"
-#
-#   set_lib_paths(libpath)
-#   install_to_lib(pkg, libpath)
-#
-# }
+  learnr.dashboard::set_lib_paths(libpath)
+  learnr.dashboard::install_to_lib(pkg, libpath)
+
+  detach("package:learnr.dashboard", unload=TRUE)
+  library(learnr.dashboard)
+}
+
+setup_proto <- function() {
+  pkg = "/home/siebrenf/git/edu/learnr.proto"
+  libpath = "/home/siebrenf/miniconda3/envs/learnr/lib/R/library"
+
+  set_lib_paths(libpath)
+  install_to_lib(pkg, libpath)
+
+}
 
 # edit_proto <- function() {
 #   pkg = "/home/siebrenf/git/edu/learnr.proto"
