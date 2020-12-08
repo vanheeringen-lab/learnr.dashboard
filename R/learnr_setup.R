@@ -18,6 +18,6 @@ learnr_setup <- function(renv_lib, renv_sys_lib=NULL){
   learnr.dashboard::set_lib_paths(c(renv_lib, renv_sys_lib))
 
   # unload all packages (prevents mixing the libraries)
-  invisible(lapply(names(sessionInfo()$loadedOnly), require, character.only = TRUE))
-  invisible(lapply(paste0('package:', names(sessionInfo()$otherPkgs)), detach, character.only=TRUE, unload=TRUE, force=TRUE))
+  suppressPackageStartupMessages(invisible(lapply(names(sessionInfo()$loadedOnly), require, character.only = TRUE)))
+  suppressWarnings(invisible(lapply(paste0('package:', names(sessionInfo()$otherPkgs)), detach, character.only=TRUE, unload=TRUE, force=TRUE)))
 }
