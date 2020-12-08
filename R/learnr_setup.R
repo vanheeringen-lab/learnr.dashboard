@@ -16,5 +16,8 @@ learnr_setup <- function(renv_lib, renv_sys_lib=NULL){
 
   # load the minimal libraries
   learnr.dashboard::set_lib_paths(c(renv_lib, renv_sys_lib))
-  tryCatch({detach("package:learnr.dashboard", unload=TRUE)},error=function(cond){invisible()})
+
+  # unload all packages (prevents mixing the libraries)
+  invisible(lapply(names(sessionInfo()$loadedOnly), require, character.only = TRUE))
+  invisible(lapply(paste0('package:', names(sessionInfo()$otherPkgs)), detach, character.only=TRUE, unload=TRUE, force=TRUE))
 }
