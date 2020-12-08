@@ -7,10 +7,7 @@ setup_dev_dashboard <- function(
   if ( !is.null(libpaths) ) {learnr.dashboard::set_lib_paths(libpaths)}
   learnr.dashboard::install_to_lib(pkg = pkg)
 
-  tryCatch(
-    {detach("package:learnr.dashboard", unload=TRUE)},
-    error=function(cond) {}
-  )
+  tryCatch({detach("package:learnr.dashboard", unload=TRUE)},error=function(cond){invisible()})
   library(learnr.dashboard)
 }
 
@@ -21,10 +18,7 @@ setup_dev_proto <- function(
   if ( !is.null(libpaths) ) {learnr.dashboard::set_lib_paths(libpaths)}
   learnr.dashboard::install_to_lib(pkg = pkg)
 
-  tryCatch(
-    {detach("package:learnr.proto", unload=TRUE)},
-    error=function(cond) {}
-  )
+  tryCatch({detach("package:learnr.proto", unload=TRUE)},error=function(cond){invisible()})
   library(learnr.proto)
 }
 
