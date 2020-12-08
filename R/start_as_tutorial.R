@@ -15,6 +15,12 @@ start_background_tutorial <- function(name = "test", package = "learnr.proto", l
   if ( !all(grepl("renv", libpaths, fixed=T)) ){
     stop("The libpaths must contain the renv project library.")
   }
+  liblist = ""
+  for (lib in libpaths){
+    liblist = paste0(liblist, "'", lib, "', ")
+  }
+  liblist = substr(liblist, 1, nchar(liblist)-2)
+  liblist = paste0("c(", liblist, ")")
 
   if ( is.null(rpath) ){
     rpath <- "R"
@@ -41,7 +47,7 @@ start_background_tutorial <- function(name = "test", package = "learnr.proto", l
   # start the app via a background system call
   cmd = paste0(
     rpath, " ", r_flags, " -e \"",
-      "learnr.dashboard::set_lib_paths(c('", libpaths[1], "', '", libpaths[2], "'))",
+      "learnr.dashboard::set_lib_paths(", liblist, ")",
       "; ",
       "learnr::run_tutorial('", name, "', '", package, "', shiny_args = ", shiny_args, ")",
     "\" 2> ", logfile , " 1> /dev/null"
