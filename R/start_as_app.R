@@ -23,19 +23,24 @@ start_app <- function(name="test", package = "learnr.proto") {
 }
 
 #' @export
-start_dev_app <- function(tutorial_dir="/home/siebrenf/git/edu/learnr.proto/inst/tutorials/test") {
+start_dev_app <- function(name="test", tutorial_dir="/home/siebrenf/git/edu/learnr.proto/inst/tutorials") {
   #' start dev tutorial as shiny markdown
   #' works without reinstalling the package first
 
+  tutorial_path = file.path(tutorial_dir, name)
+
   # Doesn't always start if the html exists.
   # (this may causes issues with multiple users)
-  rmarkdown::shiny_prerendered_clean(tutorial_dir)
+  rmarkdown::shiny_prerendered_clean(tutorial_path)
 
   # start shiny app from code here
   rmarkdown::run(
     file = NULL,
-    dir = tutorial_dir,
-    shiny_args = list(launch.browser = TRUE)
+    dir = tutorial_path,
+    # shiny_args = list(launch.browser = TRUE)
+    shiny_args = list(
+      launch.browser = (interactive() || identical(Sys.getenv("LEARNR_INTERACTIVE", "0"), "1"))
+    )
   )
 
 }
