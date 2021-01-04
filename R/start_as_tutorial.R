@@ -81,7 +81,7 @@ start_background_tutorial <- function(name = "test", package = "learnr.proto", l
       cat('\n\n')
       still_loading = FALSE
     } else if ( len > log_lines_parsed ){
-      for (line in log[log_lines_parsed: len]){
+      for (line in log[log_lines_parsed+1: len]){
         cat(line, "\n")
 
         if ( startsWith(line, "Listening on ") ){
