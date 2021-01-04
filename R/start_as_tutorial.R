@@ -12,7 +12,7 @@ start_background_tutorial <- function(name = "test", package = "learnr.proto", l
   if ( is.null(libpaths) ){
     libpaths = .libPaths()
   }
-  if ( !all(grepl("renv", libpaths, fixed=T)) ){
+  if ( !grepl("renv", libpaths[1], fixed=T) ){
     stop("The libpaths must contain the renv project library.")
   }
   liblist = ""
