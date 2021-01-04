@@ -59,27 +59,27 @@ start_background_tutorial <- function(name = "test", package = "learnr.proto", l
   #     "learnr::run_tutorial('test', 'learnr.proto', shiny_args = list(launch.browser = FALSE))",
   #   "\" 2> ~/learnr.log 1> /dev/null"
   # )
-  system(cmd, wait = FALSE)
+  system(cmd, wait=FALSE)
 
   # start the browser when the app has loaded
   # the log will contain "Listening on ..." (and the port used).
   log_lines_parsed = 0
   cat("Loading ", name, "..")
-  still_loading = T
+  still_loading = TRUE
   app_online = FALSE
   while(TRUE){
     Sys.sleep(1)
 
-    log = readLines(logfile, skipNul=T)
+    log = readLines(logfile, skipNul=TRUE)
     log = log[sapply(log, nchar) > 0]  # remove empty lines
     len = length(log)
 
     # add newline before starting to print the log
-    if (still_loading && len == 0) {
+    if ( still_loading && len == 0 ) {
       cat(".")
-    } else if (still_loading && len > 0 ){
+    } else if ( still_loading && len > 0 ){
       cat('\n\n')
-      still_loading = F
+      still_loading = FALSE
     } else if ( len > log_lines_parsed ){
       for (line in log[log_lines_parsed: len]){
         cat(line, "\n")
@@ -87,19 +87,19 @@ start_background_tutorial <- function(name = "test", package = "learnr.proto", l
         if ( startsWith(line, "Listening on ") ){
           # get port if not specified
           if ( is.null(port) ){
-            port = strsplit(line, ":", fixed = T)[[1]][3]
+            port = strsplit(line, ":", fixed=TRUE)[[1]][3]
           }
           app_online = TRUE
           break  # break from for loop
         }
 
-        if (line == "Execution halted"){
+        if ( line == "Execution halted" ){
           stop("An error had occured!")
         }
       }
-      log_lines_parsed <- len + 1
+      log_lines_parsed <- len
 
-      if (app_online){
+      if ( app_online ){
         url = paste0("http://127.0.0.1:", port)
         browseURL(url)
         break  # break from while loop
