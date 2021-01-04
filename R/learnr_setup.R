@@ -14,7 +14,7 @@ learnr_setup <- function(renv_lib, system_libs=NULL){
     system_libs = paste0("/tmp/", tmpdir, "/renv-system-library")
 
     # use raw system libraries if renv-system-library does not exist
-    if (!dir.exists(renv_sys_lib)){system_libs = .libPaths()[grepl("usr", .libPaths(), fixed=T)]}
+    if (!dir.exists(system_libs)){system_libs = .libPaths()[grepl("usr", .libPaths(), fixed=T)]}
   }
 
   # set libraries
