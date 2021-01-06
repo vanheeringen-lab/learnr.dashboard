@@ -1,5 +1,5 @@
 #' @export
-start_app <- function(name="test", package = "learnr.proto") {
+start_app <- function(name = "test", package = "learnr.proto") {
   #' start tutorial from package as shiny markdown
 
   tutorial_path <- system.file("tutorials", name, package = package)
@@ -19,11 +19,9 @@ start_app <- function(name="test", package = "learnr.proto") {
       launch.browser = (interactive() || identical(Sys.getenv("LEARNR_INTERACTIVE", "0"), "1"))
     )
   )
-
 }
 
-#' @export
-start_dev_app <- function(name="test", tutorial_dir="/home/siebrenf/git/edu/learnr.proto/inst/tutorials") {
+.start_dev_app <- function(name="test", tutorial_dir="/home/siebrenf/git/edu/learnr.proto/inst/tutorials") {
   #' start dev tutorial as shiny markdown
   #' works without reinstalling the package first
 
