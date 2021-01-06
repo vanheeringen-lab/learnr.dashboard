@@ -1,5 +1,4 @@
-#' @export
-learnr_setup <- function(renv_lib=NULL, system_libs=NULL, load=TRUE){
+.learnr_setup <- function(renv_lib=NULL, system_libs=NULL, load=TRUE){
   #' Assert that a renv library is available.
   #' If load=TRUE, set the renv library and system libraries as only libraries.
   #' If load=FALSE, return the renv library and system libraries.
@@ -37,7 +36,7 @@ learnr_setup <- function(renv_lib=NULL, system_libs=NULL, load=TRUE){
 
   if (load){
     # set libraries
-    learnr.dashboard::set_lib_paths(c(renv_lib, system_libs))
+    learnr.dashboard:::.set_lib_paths(c(renv_lib, system_libs))
 
     # unload all packages (prevents mixing the libraries)
     suppressPackageStartupMessages(invisible(lapply(names(sessionInfo()$loadedOnly), require, character.only = TRUE)))

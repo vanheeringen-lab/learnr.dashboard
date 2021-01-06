@@ -1,5 +1,4 @@
-#' @export
-start_app <- function(name = "test", package = "learnr.proto") {
+.start_app <- function(name = "test", package = "learnr.proto") {
   #' start tutorial from package as shiny markdown
 
   tutorial_path <- system.file("tutorials", name, package = package)
