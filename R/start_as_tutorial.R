@@ -1,7 +1,7 @@
 #' @export
 start_tutorial <- function(name, package = "learnr.proto") {
   #' start tutorial from package as tutorial
-  learnr::run_tutorial(name, package = package)
+  learnr.dashboard:::.run_tutorial(name, package = package)
 }
 
 #' @export
@@ -57,8 +57,9 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
 .run_tutorial <- function (name = NULL, package = NULL, shiny_args = NULL)
 {
   #' re-implementation of learnr::run_tutorial.
-  #' if the tutorial html file exists, learnr does not need to write anything.
-  #' this version skips the write permission check if not required.
+  #' ~~if the tutorial html file exists, learnr does not need to write anything.~~
+  #' ~~this version skips the write permission check if not required.~~
+  #' this version just removes the message.
 
   if (is.null(package) && !is.null(name)) {
     stop.("`package` must be provided if `name` is provided.")
