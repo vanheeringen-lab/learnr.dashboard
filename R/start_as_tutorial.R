@@ -7,7 +7,7 @@ start_tutorial <- function(name, package = "learnr.proto") {
 #' @export
 end_background_tutorial <- function(...){
   #' kill all (your) running background tutorials
-  cmd = "kill $(ps aux | grep [l]earnr.dashboard:::.run_tutorial | awk '{print $1, $2}' | grep $(whoami) | awk '{print $2}')"
+  cmd = "kill $(ps aux | grep [l]earnr.dashboard:::.run_tutorial | awk '{print $1, $2}' | grep $(whoami) | awk '{print $2}') > /dev/null 2>&1"
   system(cmd, wait=FALSE)
 }
 
