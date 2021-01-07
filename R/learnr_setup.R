@@ -17,19 +17,24 @@
   }
   if ( !(file.access(renv_lib, 4) == 0 && file.access(renv_lib, 1) == 0) ){
     stop("Incorrect permissions to renv library!
-         Please tell the admin to run 'chmod -R 755' on the renv library and upstream protected directories.")
+         Please tell the admin to run 'chmod -R 755' on the renv library, the renv library cache, and any protected upstream directories.")
   }
 
   # find the system libraries
   if ( is.null(system_libs) ){
-    # check for a renv-system-library
+    # use the renv-system-library if it exists
     for (tmpdir in list.files("/tmp")){
       if ("renv-system-library" %in% list.files(paste0("/tmp/", tmpdir))){break}
     }
     system_libs = paste0("/tmp/", tmpdir, "/renv-system-library")
 
-    # use the default system libraries if renv-system-library does not exist
+    # else use the conda system library if it exists
     if (!dir.exists(system_libs)){
+      system_libs = .libPaths()[grepl("conda", .libPaths(), fixed=T)]
+    }
+
+    # else use the default system libraries
+    if (length(system_libs) == 0){
       system_libs = .libPaths()[grepl("usr", .libPaths(), fixed=T)]
     }
   }
