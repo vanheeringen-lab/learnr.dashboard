@@ -1,5 +1,6 @@
 .start_app <- function(name = "test", package = "learnr.proto") {
   #' start tutorial from package as shiny markdown
+  #' example: learnr.dashboard:::.start_app("fg1")
 
   tutorial_path <- system.file("tutorials", name, package = package)
 
@@ -23,6 +24,7 @@
 .start_dev_app <- function(name="test", tutorial_dir="/home/siebrenf/git/edu/learnr.proto/inst/tutorials") {
   #' start dev tutorial as shiny markdown
   #' works without reinstalling the package first
+  #' example: learnr.dashboard:::.start_dev_app("fg1")
 
   tutorial_path = file.path(tutorial_dir, name)
 
