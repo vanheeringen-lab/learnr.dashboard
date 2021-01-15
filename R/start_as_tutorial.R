@@ -1,20 +1,56 @@
+#' Start a learnr tutorial
+#'
+#' @param name Tutorial name. Available tutorials: "fg1", "fg2", "fg3", "fg4".
+#' @param package Tutorial package. Default: learnr.proto (Functional Genomics)
+#' @examples
+#' learnr.dashboard::start_tutorial("fg1")
+#'
+#' learnr.dashboard::start_tutorial("fg2")
 #' @export
 start_tutorial <- function(name, package = "learnr.proto") {
-  #' start tutorial from package as tutorial
   learnr.dashboard:::.run_tutorial(name, package = package)
 }
 
+#' Stop all background tutorials
+#'
+#' Stop all learnr tutorials you are running in the background. Progress should be saved.
+#'
+#' Uses system calls which may not be platform independent.
+#'
+#' @param ... Ignored.
+#' @examples
+#' learnr.dashboard::end_background_tutoria()
+#'
+#' learnr.dashboard::end_background_tutoria("fg1")
 #' @export
 end_background_tutorial <- function(...){
-  #' kill all (your) running background tutorials
   cmd = "kill $(ps aux | grep [l]earnr.dashboard:::.run_tutorial | awk '{print $1, $2}' | grep $(whoami) | awk '{print $2}') > /dev/null 2>&1"
   system(cmd, wait=FALSE)
 }
 
+#' Start a learnr tutorial in the background
+#'
+#' Background tutorials do not occupy the current session
+#'
+#' Background tutorials should contain an inbuilt terminate on timeout,
+#' but can be stopped immediately with `learnr.dashboard::end_background_tutorial()`
+#'
+#' Uses system calls which may not be platform independent.
+#'
+#' @param name Tutorial name. Available tutorials: "fg1", "fg2", "fg3", "fg4".
+#' @param package Tutorial package. Default: learnr.proto (Functional Genomics)
+#' @param r_path Specify the R executable to use. Default: Same as current session
+#' @param r_args Specify the R flags to use. Default: --vanilla -q
+#' @param port Specify the port to start the tutorial app on (must be free). Default: NULL (picks a free port for you)
+#' @examples
+#' learnr.dashboard::start_background_tutorial("fg1")
+#'
+#' learnr.dashboard::start_background_tutorial("fg2")
 #' @export
 start_background_tutorial <- function(name, package = "learnr.proto", r_path = NULL, r_args = NULL, port = NULL) {
   #' start tutorial from package in library as a background process.
   #' the tutorial should contain an inbuilt terminate on session end/timeout.
+  #' example: learnr.dashboard:::start_background_tutorial("fg1")
 
   # check if a renv library is available
   libpaths = learnr.dashboard:::.learnr_setup(load=F)
@@ -77,30 +113,31 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
     shiny_args$launch.browser <- (interactive() || identical(Sys.getenv("LEARNR_INTERACTIVE",
                                                                         "0"), "1"))
   }
-  render_args <- tryCatch({
-    local({
-      # if(!file.exists(file.path(tutorial_path, paste0(name, ".html")))){
-        tmp_save_file <- file.path(tutorial_path, "__leanr_test_file")
-        on.exit({
-          if (file.exists(tmp_save_file)) {
-            unlink(tmp_save_file)
-          }
-        }, add = TRUE)
-        suppressWarnings(cat("test", file = tmp_save_file))
-      # }
-      list()
-    })
-  }, error = function(e) {
-    # message("Rendering tutorial in a temp folder since `learnr` does not have write permissions in the tutorial folder: ",
-    #         tutorial_path)
-    temp_output_dir <- file.path(tempdir(), "learnr", package,
-                                 name)
-    if (!dir.exists(temp_output_dir)) {
-      dir.create(temp_output_dir, recursive = TRUE)
-    }
-    list(output_dir = temp_output_dir, intermediates_dir = temp_output_dir,
-         knit_root_dir = temp_output_dir)
-  })
+  # render_args <- tryCatch({
+  #   local({
+  #     # if(!file.exists(file.path(tutorial_path, paste0(name, ".html")))){
+  #       tmp_save_file <- file.path(tutorial_path, "__leanr_test_file")
+  #       on.exit({
+  #         if (file.exists(tmp_save_file)) {
+  #           unlink(tmp_save_file)
+  #         }
+  #       }, add = TRUE)
+  #       suppressWarnings(cat("test", file = tmp_save_file))
+  #     # }
+  #     list()
+  #   })
+  # }, error = function(e) {
+  #   # message("Rendering tutorial in a temp folder since `learnr` does not have write permissions in the tutorial folder: ",
+  #   #         tutorial_path)
+  #   temp_output_dir <- file.path(tempdir(), "learnr", package,
+  #                                name)
+  #   if (!dir.exists(temp_output_dir)) {
+  #     dir.create(temp_output_dir, recursive = TRUE)
+  #   }
+  #   list(output_dir = temp_output_dir, intermediates_dir = temp_output_dir,
+  #        knit_root_dir = temp_output_dir)
+  # })
+  render_args <- list()
   withr::with_dir(tutorial_path, {
     if (!identical(Sys.getenv("SHINY_PORT", ""), "")) {
       withr::local_envvar(c(RMARKDOWN_RUN_PRERENDER = "0"))
