@@ -142,9 +142,301 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
     if (!identical(Sys.getenv("SHINY_PORT", ""), "")) {
       withr::local_envvar(c(RMARKDOWN_RUN_PRERENDER = "0"))
     }
-    rmarkdown::run(file = NULL, dir = tutorial_path, shiny_args = shiny_args,
+    learnr.dashboard:::.run(file = NULL, dir = tutorial_path, shiny_args = shiny_args,
                    render_args = render_args)
   })
+}
+
+.run <- function (file = "index.Rmd", dir = dirname(file), default_file = NULL,
+                  auto_reload = TRUE, shiny_args = NULL, render_args = NULL)
+{
+  #' re-implementation of rmarkdown::run.
+  #' this version calls learnr.dashboard:::.runApp instead of shiny::runApp
+
+  # import internal functions/objects
+  # source: https://github.com/rstudio/rmarkdown/blob/master/R/util.R#L15
+  "%||%" <- rmarkdown:::`%||%`
+  # source: https://github.com/rstudio/shiny/blob/master/R/globals.R#L2
+  .globals <- shiny:::.globals
+
+  if (is.null(default_file)) {
+    allRmds <- list.files(path = dir, pattern = "^[^_].*\\.[Rr][Mm][Dd]$")
+    if (length(allRmds) == 1) {
+      default_file <- allRmds
+    }
+    else {
+      index <- which(tolower(allRmds) == "index.rmd")
+      if (length(index) > 0) {
+        default_file <- allRmds[index[1]]
+      }
+      else {
+        for (rmd in allRmds) {
+          runtime <- rmarkdown::yaml_front_matter(file.path(dir,
+                                                 rmd))$runtime
+          if (is_shiny(runtime)) {
+            default_file <- rmd
+            break
+          }
+        }
+      }
+    }
+  }
+  if (is.null(default_file)) {
+    indexHtml <- list.files(dir, "index.html?", ignore.case = TRUE)
+    if (length(indexHtml) > 0)
+      default_file <- indexHtml[1]
+  }
+  dir <- rmarkdown:::normalize_path(dir)
+  if (!rmarkdown:::dir_exists(dir))
+    stop("The directory '", dir, "' does not exist")
+  if (!is.null(file)) {
+    file_rel <- rmarkdown:::normalize_path(file)
+    if (identical(substr(file_rel, 1, nchar(dir)), dir))
+      file_rel <- substr(file_rel, nchar(dir) + 2, nchar(file_rel))
+    if (is.null(default_file)) {
+      resolved <-  rmarkdown:::resolve_relative(dir, file_rel)
+      if (is.null(resolved) || !file.exists(resolved))
+        stop("The file '", file, "' does not exist in the directory '",
+             dir, "'")
+    }
+  }
+  if (is.null(render_args$envir))
+    render_args$envir <- parent.frame()
+  target_file <- file %||% file.path(dir, default_file)
+  runtime <- if (length(target_file))
+    rmarkdown::yaml_front_matter(target_file)$runtime
+  if (rmarkdown:::is_shiny_prerendered(runtime)) {
+    app <- rmarkdown:::shiny_prerendered_app(target_file, render_args = render_args)
+  }
+  else {
+    onStart <- function() {
+      global_r <- rmarkdown:::file.path.ci(dir, "global.R")
+      if (file.exists(global_r)) {
+        source(global_r, local = FALSE)
+      }
+      shiny::addResourcePath("rmd_resources", pkg_file("rmd/h/rmarkdown"))
+    }
+    app <- shiny::shinyApp(ui = rmarkdown:::rmarkdown_shiny_ui(dir, default_file),
+                           uiPattern = "^/$|^/index\\.html?$|^(/.*\\.[Rr][Mm][Dd])$",
+                           onStart = onStart, server = rmarkdown:::rmarkdown_shiny_server(dir,
+                                                                              default_file, auto_reload, render_args))
+    on.exit({
+      .globals$evaluated_global_chunks <- character()
+    }, add = TRUE)
+  }
+  launch_browser <- shiny_args$launch.browser %||% (!is.null(file) &&
+                                                      interactive())
+  if (isTRUE(launch_browser)) {
+    launch_browser <- function(url) {
+      url <- paste(url, file_rel, sep = "/")
+      browser <- getOption("shiny.launch.browser")
+      if (is.function(browser)) {
+        browser(url)
+      }
+      else {
+        utils::browseURL(url)
+      }
+    }
+  }
+  shiny_args <- rmarkdown:::merge_lists(list(appDir = app, launch.browser = launch_browser),
+                            shiny_args)
+  ret <- do.call(learnr.dashboard:::.runApp, shiny_args)
+  invisible(ret)
+}
+
+.runApp <- function (appDir = getwd(), port = getOption("shiny.port"), launch.browser = getOption("shiny.launch.browser", interactive()), host = getOption("shiny.host", "127.0.0.1"),
+                     workerId = "", quiet = FALSE, display.mode = c("auto", "normal", "showcase"), test.mode = getOption("shiny.testmode", FALSE))
+{
+  #' re-implementation of shiny::runApp
+  #' this version uses a more restricted range of ports
+
+  # import internal functions/objects
+  # source: https://github.com/rstudio/shiny/blob/master/R/globals.R#L2
+  .globals <- shiny:::.globals
+
+  on.exit({
+    shiny:::handlerManager$clear()
+  }, add = TRUE)
+  if (.globals$running) {
+    stop("Can't call `runApp()` from within `runApp()`. If your ",
+         "application code contains `runApp()`, please remove it.")
+  }
+  .globals$running <- TRUE
+  on.exit({
+    .globals$running <- FALSE
+  }, add = TRUE)
+  oldOptionSet <- .globals$options
+  on.exit({
+    .globals$options <- oldOptionSet
+  }, add = TRUE)
+  shiny:::shinyOptions(appToken = shiny:::createUniqueId(8))
+  ops <- options(warn = max(1, getOption("warn", default = 1)),
+                 pool.scheduler = shiny:::scheduleTask)
+  on.exit(options(ops), add = TRUE)
+  if (is.null(shiny:::getShinyOption("cache"))) {
+    shiny:::shinyOptions(cache = shiny:::MemoryCache$new())
+  }
+  appParts <- shiny:::as.shiny.appobj(appDir)
+  appOps <- appParts$options
+  findVal <- function(arg, default) {
+    if (arg %in% names(appOps))
+      appOps[[arg]]
+    else default
+  }
+  if (missing(port))
+    port <- findVal("port", port)
+  if (missing(launch.browser))
+    launch.browser <- findVal("launch.browser", launch.browser)
+  if (missing(host))
+    host <- findVal("host", host)
+  if (missing(quiet))
+    quiet <- findVal("quiet", quiet)
+  if (missing(display.mode))
+    display.mode <- findVal("display.mode", display.mode)
+  if (missing(test.mode))
+    test.mode <- findVal("test.mode", test.mode)
+  if (is.null(host) || is.na(host))
+    host <- "0.0.0.0"
+  shiny:::workerId(workerId)
+  if (shiny:::inShinyServer()) {
+    ver <- Sys.getenv("SHINY_SERVER_VERSION")
+    if (utils::compareVersion(ver, shiny:::.shinyServerMinVersion) <
+        0) {
+      warning("Shiny Server v", shiny:::.shinyServerMinVersion,
+              " or later is required; please upgrade!")
+    }
+  }
+  shiny:::setShowcaseDefault(0)
+  .globals$testMode <- test.mode
+  if (test.mode) {
+    message("Running application in test mode.")
+  }
+  if (is.character(appDir)) {
+    desc <- shiny:::file.path.ci(if (tolower(tools::file_ext(appDir)) ==
+                             "r")
+      dirname(appDir)
+      else appDir, "DESCRIPTION")
+    if (file.exists(desc)) {
+      con <- file(desc, encoding = shiny:::checkEncoding(desc))
+      on.exit(close(con), add = TRUE)
+      settings <- read.dcf(con)
+      if ("DisplayMode" %in% colnames(settings)) {
+        mode <- settings[1, "DisplayMode"]
+        if (mode == "Showcase") {
+          shiny:::setShowcaseDefault(1)
+          if ("IncludeWWW" %in% colnames(settings)) {
+            .globals$IncludeWWW <- as.logical(settings[1,
+                                                       "IncludeWWW"])
+            if (is.na(.globals$IncludeWWW)) {
+              stop("In your Description file, `IncludeWWW` ",
+                   "must be set to `True` (default) or `False`")
+            }
+          }
+          else {
+            .globals$IncludeWWW <- TRUE
+          }
+        }
+      }
+    }
+  }
+  if (is.null(.globals$IncludeWWW) || is.na(.globals$IncludeWWW)) {
+    .globals$IncludeWWW <- TRUE
+  }
+  display.mode <- match.arg(display.mode)
+  if (display.mode == "normal") {
+    shiny:::setShowcaseDefault(0)
+  }
+  else if (display.mode == "showcase") {
+    shiny:::setShowcaseDefault(1)
+  }
+  require(shiny)
+  # default: max_tries = 20
+  max_tries = 20
+  # default: port_range = c(3000, 8000)
+  port_range = c(7000, 8000)
+  # default: excluded_ports = c(3659, 4045, 6000, 6665:6669, 6697)
+  excluded_ports = c(3659, 4045, 6000, 6665:6669, 6697)
+  if (is.null(port)) {
+    for (i in 1:max_tries) {
+      if (!is.null(.globals$lastPort)) {
+        port <- .globals$lastPort
+        .globals$lastPort <- NULL
+      }
+      else {
+        # added custom port range and excluded_ports
+        while (TRUE) {
+          port <- shiny:::p_randomInt(port_range[1], port_range[2])
+          if (!port %in% excluded_ports) {
+            break
+          }
+        }
+      }
+      # startServer and stopServer are apparently functions from httpuv
+      # source: https://stackoverflow.com/questions/19613580/shiny-runexample-error-fail-to-create-server
+      # added quiet=TRUE, from https://github.com/yihui/servr/commit/2cbd38a953ee4afb61a1e80f8aacd7e31134a95e
+      tmp <- try(httpuv::startServer(host, port, list(), quiet = TRUE), silent = TRUE)
+      if (!inherits(tmp, "try-error")) {
+        httpuv::stopServer(tmp)
+        .globals$lastPort <- port
+        break
+      } else if (i == max_tries){
+        # added custom message if no port was found
+        stop("Could not find an available port. If this happens again, ask everyone in the Discord to run learnr.dashboard::end_background_tutorial()")
+      }
+    }
+  }
+  on.exit({
+    .globals$onStopCallbacks$invoke()
+    .globals$onStopCallbacks <- shiny:::Callbacks$new()
+  }, add = TRUE)
+  shiny:::unconsumeAppOptions(appParts$appOptions)
+  if (!is.null(appParts$onStop))
+    on.exit(appParts$onStop(), add = TRUE)
+  if (!is.null(appParts$onStart))
+    appParts$onStart()
+  server <- shiny:::startApp(appParts, port, host, quiet)
+  shiny:::shinyOptions(server = server)
+  on.exit({
+    httpuv::stopServer(server)
+  }, add = TRUE)
+  if (!is.character(port)) {
+    browseHost <- host
+    if (identical(host, "0.0.0.0")) {
+      browseHost <- "127.0.0.1"
+    }
+    else if (identical(host, "::")) {
+      browseHost <- "::1"
+    }
+    if (httpuv::ipFamily(browseHost) == 6L) {
+      browseHost <- paste0("[", browseHost, "]")
+    }
+    appUrl <- paste("http://", browseHost, ":", port, sep = "")
+    if (is.function(launch.browser))
+      launch.browser(appUrl)
+    else if (launch.browser)
+      utils::browseURL(appUrl)
+  }
+  else {
+    appUrl <- NULL
+  }
+  shiny:::callAppHook("onAppStart", appUrl)
+  on.exit({
+    shiny:::callAppHook("onAppStop", appUrl)
+  }, add = TRUE)
+  .globals$reterror <- NULL
+  .globals$retval <- NULL
+  .globals$stopped <- FALSE
+  shiny:::..stacktraceoff..(captureStackTraces({
+    while (!.globals$stopped) {
+      shiny:::..stacktracefloor..(shiny:::serviceApp())
+    }
+  }))
+  if (isTRUE(.globals$reterror)) {
+    stop(.globals$retval)
+  }
+  else if (.globals$retval$visible)
+    .globals$retval$value
+  else invisible(.globals$retval$value)
 }
 
 .open_browser <- function(name, logfile, address="http://127.0.0.1") {
