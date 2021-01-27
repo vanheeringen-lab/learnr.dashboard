@@ -4,7 +4,7 @@
 \alias{.open_browser}
 \title{start a browser when the app has loaded}
 \usage{
-.open_browser(name, logfile, address = "http://127.0.0.1")
+.open_browser(name, logfile)
 }
 \description{
 start a browser when the app has loaded

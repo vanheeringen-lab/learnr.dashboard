@@ -4,12 +4,14 @@
 \alias{start_tutorial}
 \title{Start a learnr tutorial}
 \usage{
-start_tutorial(name, package = "learnr.proto")
+start_tutorial(name, package = "learnr.proto", host = NULL)
 }
 \arguments{
 \item{name}{Tutorial name. Available tutorials: "fg1", "fg2", "fg3", "fg4".}
 
 \item{package}{Tutorial package. Default: learnr.proto (Functional Genomics)}
+
+\item{host}{Rstudio Server IP address. Required if the server is not hosting on localhost. Automatically set for rstudio.science.ru.nl.}
 }
 \description{
 Start a learnr tutorial

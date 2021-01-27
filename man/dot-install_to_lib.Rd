@@ -2,10 +2,12 @@
 % Please edit documentation in R/install_to_lib.R
 \name{.install_to_lib}
 \alias{.install_to_lib}
-\title{install package in lib}
+\title{install package in lib
+example: .install_to_lib("/home/siebrenf/git/edu/learnr.dashboard")}
 \usage{
 .install_to_lib(pkg = NULL, lib = NULL)
 }
 \description{
+install package in lib
 example: .install_to_lib("/home/siebrenf/git/edu/learnr.dashboard")
 }

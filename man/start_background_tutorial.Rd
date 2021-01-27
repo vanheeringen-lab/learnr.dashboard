@@ -9,6 +9,7 @@ start_background_tutorial(
   package = "learnr.proto",
   r_path = NULL,
   r_args = NULL,
+  host = NULL,
   port = NULL
 )
 }
@@ -20,6 +21,8 @@ start_background_tutorial(
 \item{r_path}{Specify the R executable to use. Default: Same as current session}
 
 \item{r_args}{Specify the R flags to use. Default: --vanilla -q}
+
+\item{host}{Rstudio Server IP address. Required if the server is not hosting on localhost. Automatically set for rstudio.science.ru.nl.}
 
 \item{port}{Specify the port to start the tutorial app on (must be free). Default: NULL (picks a free port for you)}
 }

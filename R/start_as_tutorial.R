@@ -2,13 +2,21 @@
 #'
 #' @param name Tutorial name. Available tutorials: "fg1", "fg2", "fg3", "fg4".
 #' @param package Tutorial package. Default: learnr.proto (Functional Genomics)
+#' @param host Rstudio Server IP address. Required if the server is not hosting on localhost. Automatically set for rstudio.science.ru.nl.
 #' @examples
 #' learnr.dashboard::start_tutorial("fg1")
 #'
 #' learnr.dashboard::start_tutorial("fg2")
 #' @export
-start_tutorial <- function(name, package = "learnr.proto") {
-  learnr.dashboard:::.run_tutorial(name, package = package)
+start_tutorial <- function(name, package = "learnr.proto", host = NULL) {
+  if ( is.null(host) ){
+    if ( Sys.info()["nodename"]=="rstudiovm" ) host <- "131.174.16.139"
+  }
+  shiny_args = list()
+  if ( !is.null(host) ){
+    shiny_args = list("host"=host)
+  }
+  learnr.dashboard:::.run_tutorial(name, package = package, shiny_args=shiny_args)
 }
 
 #' Stop all background tutorials
@@ -41,13 +49,14 @@ end_background_tutorial <- function(...){
 #' @param package Tutorial package. Default: learnr.proto (Functional Genomics)
 #' @param r_path Specify the R executable to use. Default: Same as current session
 #' @param r_args Specify the R flags to use. Default: --vanilla -q
+#' @param host Rstudio Server IP address. Required if the server is not hosting on localhost. Automatically set for rstudio.science.ru.nl.
 #' @param port Specify the port to start the tutorial app on (must be free). Default: NULL (picks a free port for you)
 #' @examples
 #' learnr.dashboard::start_background_tutorial("fg1")
 #'
 #' learnr.dashboard::start_background_tutorial("fg2")
 #' @export
-start_background_tutorial <- function(name, package = "learnr.proto", r_path = NULL, r_args = NULL, port = NULL) {
+start_background_tutorial <- function(name, package = "learnr.proto", r_path = NULL, r_args = NULL, host = NULL, port = NULL) {
   #' start tutorial from package in library as a background process.
   #' the tutorial should contain an inbuilt terminate on session end/timeout.
   #' example: learnr.dashboard:::start_background_tutorial("fg1")
@@ -67,23 +76,33 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
     r_args = "--vanilla -q"  # cannot contain '-e'
   }
 
-  shiny_args = "list(launch.browser=FALSE)"
+  shiny_args = "list(launch.browser=F)"
+  if ( is.null(host) ){
+    if ( Sys.info()["nodename"]=="rstudiovm" ) host <- "131.174.16.139"
+  }
+  if ( !is.null(host) ){
+    shiny_args = paste0(
+      substr(shiny_args, 1, nchar(shiny_args)-1),
+      ", host='", host, "')"
+    )
+  }
   if ( !is.null(port) ){
     shiny_args = paste0(
-      "list(launch.browser=FALSE, port=", port, ")"
+      substr(shiny_args, 1, nchar(shiny_args)-1),
+      ", port=", port, ")"
     )
   }
 
   # start the app via a background system call
   cmd = paste0(
     r_path, " ", r_args, " -e \"",
-      ".libPaths(", renv_lib,")",
-      "; ",
-      "learnr.dashboard:::.learnr_setup()",
-      "; ",
-      "learnr.dashboard:::.run_tutorial('", name, "', '", package, "', shiny_args=", shiny_args, ")",
-      "; ",
-      "q('no')",  # stop this R process after the tutorial has stopped
+    ".libPaths(", renv_lib,")",
+    "; ",
+    "learnr.dashboard:::.learnr_setup()",
+    "; ",
+    "learnr.dashboard:::.run_tutorial('", name, "', '", package, "', shiny_args=", shiny_args, ")",
+    "; ",
+    "q('no')",  # stop this R process after the tutorial has stopped
     "\" 2> ", logfile , " 1> /dev/null"
   )
   system(cmd, wait=FALSE)
@@ -143,7 +162,7 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
       withr::local_envvar(c(RMARKDOWN_RUN_PRERENDER = "0"))
     }
     learnr.dashboard:::.run(file = NULL, dir = tutorial_path, shiny_args = shiny_args,
-                   render_args = render_args)
+                            render_args = render_args)
   })
 }
 
@@ -172,7 +191,7 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
       else {
         for (rmd in allRmds) {
           runtime <- rmarkdown::yaml_front_matter(file.path(dir,
-                                                 rmd))$runtime
+                                                            rmd))$runtime
           if (is_shiny(runtime)) {
             default_file <- rmd
             break
@@ -219,7 +238,7 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
     app <- shiny::shinyApp(ui = rmarkdown:::rmarkdown_shiny_ui(dir, default_file),
                            uiPattern = "^/$|^/index\\.html?$|^(/.*\\.[Rr][Mm][Dd])$",
                            onStart = onStart, server = rmarkdown:::rmarkdown_shiny_server(dir,
-                                                                              default_file, auto_reload, render_args))
+                                                                                          default_file, auto_reload, render_args))
     on.exit({
       .globals$evaluated_global_chunks <- character()
     }, add = TRUE)
@@ -239,7 +258,7 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
     }
   }
   shiny_args <- rmarkdown:::merge_lists(list(appDir = app, launch.browser = launch_browser),
-                            shiny_args)
+                                        shiny_args)
   ret <- do.call(learnr.dashboard:::.runApp, shiny_args)
   invisible(ret)
 }
@@ -313,7 +332,7 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
   }
   if (is.character(appDir)) {
     desc <- shiny:::file.path.ci(if (tolower(tools::file_ext(appDir)) ==
-                             "r")
+                                     "r")
       dirname(appDir)
       else appDir, "DESCRIPTION")
     if (file.exists(desc)) {
@@ -439,7 +458,7 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
   else invisible(.globals$retval$value)
 }
 
-.open_browser <- function(name, logfile, address="http://127.0.0.1") {
+.open_browser <- function(name, logfile) {
   #' start a browser when the app has loaded
 
   cat("Loading ", name, "..")
@@ -464,7 +483,7 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
         cat(line, "\n")
 
         if ( startsWith(line, "Listening on ") ){
-          port = strsplit(line, ":", fixed=TRUE)[[1]][3]
+          url = strsplit(line, "Listening on ", fixed=TRUE)[[1]][2]
           app_online = TRUE
           break  # break from for loop
         }
@@ -476,7 +495,6 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
       log_lines_parsed <- len
 
       if ( app_online ){
-        url = paste0(address, ":", port)
         browseURL(url)
         break  # break from while loop
       }
