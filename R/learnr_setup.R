@@ -44,8 +44,11 @@
     learnr.dashboard:::.set_lib_paths(c(renv_lib, system_libs))
 
     # unload all packages (prevents mixing the libraries)
-    suppressPackageStartupMessages(invisible(lapply(names(sessionInfo()$loadedOnly), require, character.only = TRUE)))
+    suppressMessages(invisible(lapply(names(sessionInfo()$loadedOnly), require, character.only = TRUE)))
     suppressWarnings(invisible(lapply(paste0('package:', names(sessionInfo()$otherPkgs)), detach, character.only=TRUE, unload=TRUE, force=TRUE)))
+
+    # load standard libraries to smooth out app loading
+    suppressMessages(invisible(lapply(c("shiny", "learnr"), library, character.only = TRUE)))
   } else {
     return(c(renv_lib, system_libs))
   }
