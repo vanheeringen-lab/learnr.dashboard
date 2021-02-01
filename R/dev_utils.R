@@ -1,3 +1,4 @@
+#' @keywords internal
 .setup_dev_dashboard <- function(
   lib = "/home/siebrenf/git/edu/learnr.proto/renv/library/R-3.6/x86_64-pc-linux-gnu",
   pkg = "/home/siebrenf/git/edu/learnr.dashboard"
@@ -9,6 +10,7 @@
   #library(learnr.dashboard)
 }
 
+#' @keywords internal
 .setup_dev_proto <- function(
   lib = "/home/siebrenf/git/edu/learnr.proto/renv/library/R-3.6/x86_64-pc-linux-gnu",
   pkg = "/home/siebrenf/git/edu/learnr.proto"

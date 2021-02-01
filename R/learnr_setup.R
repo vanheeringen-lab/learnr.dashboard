@@ -1,3 +1,4 @@
+#' @keywords internal
 .learnr_setup <- function(renv_lib=NULL, system_libs=NULL, load=TRUE){
   #' Assert that a renv library is available.
   #' If load=TRUE, set the renv library and system libraries as only libraries.

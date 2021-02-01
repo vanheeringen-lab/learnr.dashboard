@@ -1,3 +1,4 @@
+#' @keywords internal
 .set_lib_paths <- function(lib_vec) {
   #' actually set R library paths
   #' source: https://www.milesmcbain.com/posts/hacking-r-library-paths/

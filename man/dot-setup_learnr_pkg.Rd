@@ -7,7 +7,7 @@
 .setup_learnr_pkg(tutorials = NULL, pkg = NULL, lib = NULL)
 }
 \arguments{
-\item{tutorials}{List of tutorials to update. Will search the tutorials directory if unset.}
+\item{tutorials}{List of tutorials to update. Default: all tutorials in the tutorials directory}
 
 \item{pkg}{Tutorial package. Default: current directory}
 

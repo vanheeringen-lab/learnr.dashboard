@@ -109,6 +109,7 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
   learnr.dashboard:::.open_browser(name, logfile)
 }
 
+#' @keywords internal
 .run_tutorial <- function (name = NULL, package = NULL, shiny_args = NULL)
 {
   #' re-implementation of learnr::run_tutorial.
@@ -166,6 +167,7 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
   })
 }
 
+#' @keywords internal
 .run <- function (file = "index.Rmd", dir = dirname(file), default_file = NULL,
                   auto_reload = TRUE, shiny_args = NULL, render_args = NULL)
 {
@@ -263,6 +265,7 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
   invisible(ret)
 }
 
+#' @keywords internal
 .runApp <- function (appDir = getwd(), port = getOption("shiny.port"), launch.browser = getOption("shiny.launch.browser", interactive()), host = getOption("shiny.host", "127.0.0.1"),
                      workerId = "", quiet = FALSE, display.mode = c("auto", "normal", "showcase"), test.mode = getOption("shiny.testmode", FALSE))
 {
@@ -458,6 +461,7 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
   else invisible(.globals$retval$value)
 }
 
+#' @keywords internal
 .open_browser <- function(name, logfile) {
   #' start a browser when the app has loaded
 

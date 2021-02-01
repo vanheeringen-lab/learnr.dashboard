@@ -1,3 +1,4 @@
+#' @keywords internal
 .install_to_lib <- function(pkg=NULL, lib=NULL) {
   #' install package in lib
   #' example: .install_to_lib("/home/siebrenf/git/edu/learnr.dashboard")
