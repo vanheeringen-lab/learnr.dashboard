@@ -58,7 +58,7 @@ deploy_learnr_pkg <- function(tutorials=NULL, pkg=NULL, lib=NULL){
     learnr.dashboard::start_background_tutorial(tutorial)
   }
   Sys.sleep(3)
-  learnr.dashboard::end_background_tutorial()
+  suppressMessages(learnr.dashboard::end_background_tutorial())
 
   # set permission to the renv library
   system(paste0("chmod -R 755 ", lib), wait=T)  # Sys.chmod() is not recursive

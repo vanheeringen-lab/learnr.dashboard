@@ -40,9 +40,9 @@ start_tutorial <- function(name=NULL, package = "learnr.proto", host = NULL) {
 #'
 #' @param ... Ignored.
 #' @examples
-#' learnr.dashboard::end_background_tutoria()
+#' learnr.dashboard::end_background_tutorial()
 #'
-#' learnr.dashboard::end_background_tutoria("fg1")
+#' learnr.dashboard::end_background_tutorial("fg1")
 #' @export
 end_background_tutorial <- function(...){
   cmd = "kill $(ps aux | grep [l]earnr.dashboard:::.run_tutorial | awk '{print $1, $2}' | grep $(whoami) | awk '{print $2}') > /dev/null 2>&1"
