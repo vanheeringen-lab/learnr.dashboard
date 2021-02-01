@@ -1,7 +1,7 @@
 Package: learnr.dashboard
 Type: Package
 Title: A Dashboard for LearnR Tutorials
-Version: 0.3.1
+Version: 0.4
 Authors@R: 
     person(given = "Siebren",
            family = "Frölich",
