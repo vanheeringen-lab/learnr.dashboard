@@ -1,50 +1,30 @@
-#' @keywords internal
-.start_app <- function(name = "test", package = "learnr.proto") {
-  #' start tutorial from package as shiny markdown
-  #' example: learnr.dashboard:::.start_app("fg1")
+### this function does not work on rstudio.science.ru.nl (as the host is not 127.0.0.1) ###
 
-  tutorial_path <- system.file("tutorials", name, package = package)
+# #' @title start tutorial from package as shiny markdown
+# #' @keywords internal
+# #' @description tutorial must be installed
+# #' @examples learnr.dashboard:::.start_app("fg1")
+# .start_app <- function(name = "test", package = "learnr.proto") {
+#   tutorial_path <- system.file("tutorials", name, package = package)
+#
+#   # Doesn't always start if the html exists.
+#   # (this may causes issues with multiple users)
+#   rmd_file = file.path(tutorial_path, list.files(tutorial_path, pattern = "*.Rmd")[1])
+#   rmarkdown::shiny_prerendered_clean(rmd_file)
+#
+#   # start shiny app from code here
+#   rmarkdown::run(
+#     file = NULL,
+#     dir = tutorial_path,
+#     # opens the tutorial in a new browser tab
+#     # shiny_args = list(launch.browser = TRUE)
+#     shiny_args = list(
+#       launch.browser = (interactive() || identical(Sys.getenv("LEARNR_INTERACTIVE", "0"), "1"))
+#     )
+#   )
+# }
 
-  # Doesn't always start if the html exists.
-  # (this may causes issues with multiple users)
-  rmd_file = file.path(tutorial_path, list.files(tutorial_path, pattern = "*.Rmd")[1])
-  rmarkdown::shiny_prerendered_clean(rmd_file)
-
-  # start shiny app from code here
-  rmarkdown::run(
-    file = NULL,
-    dir = tutorial_path,
-    # opens the tutorial in a new browser tab
-    # shiny_args = list(launch.browser = TRUE)
-    shiny_args = list(
-      launch.browser = (interactive() || identical(Sys.getenv("LEARNR_INTERACTIVE", "0"), "1"))
-    )
-  )
-}
-
-#' @keywords internal
-.start_dev_app <- function(name="test", tutorial_dir="/home/siebrenf/git/edu/learnr.proto/inst/tutorials") {
-  #' start dev tutorial as shiny markdown
-  #' works without reinstalling the package first
-  #' example: learnr.dashboard:::.start_dev_app("fg1")
-
-  tutorial_path = file.path(tutorial_dir, name)
-
-  # Doesn't always start if the html exists.
-  # (this may causes issues with multiple users)
-  rmarkdown::shiny_prerendered_clean(tutorial_path)
-
-  # start shiny app from code here
-  rmarkdown::run(
-    file = NULL,
-    dir = tutorial_path,
-    # shiny_args = list(launch.browser = TRUE)
-    shiny_args = list(
-      launch.browser = (interactive() || identical(Sys.getenv("LEARNR_INTERACTIVE", "0"), "1"))
-    )
-  )
-
-}
+### old dev functions ###
 
 # dev.a <- function() {
 #   #' dev only

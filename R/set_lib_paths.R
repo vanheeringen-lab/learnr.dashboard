@@ -1,8 +1,9 @@
+#' @title actually set R library paths
 #' @keywords internal
-.set_lib_paths <- function(lib_vec) {
-  #' actually set R library paths
-  #' source: https://www.milesmcbain.com/posts/hacking-r-library-paths/
-
+#' @description R has no formal method to set library paths. Only Renv and this function seem to be able to do this.
+#' @param lib_vec library path(s) to use
+#' @details source: https://www.milesmcbain.com/posts/hacking-r-library-paths/
+set_lib_paths <- function(lib_vec) {
   lib_vec <- normalizePath(lib_vec, mustWork = TRUE)
 
   shim_fun <- .libPaths

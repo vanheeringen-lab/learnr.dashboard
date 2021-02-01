@@ -5,7 +5,7 @@
 \title{Start a learnr tutorial in the background}
 \usage{
 start_background_tutorial(
-  name,
+  name = NULL,
   package = "learnr.proto",
   r_path = NULL,
   r_args = NULL,
@@ -14,29 +14,32 @@ start_background_tutorial(
 )
 }
 \arguments{
-\item{name}{Tutorial name. Available tutorials: "fg1", "fg2", "fg3", "fg4".}
+\item{name}{Tutorial name. Available tutorials: "fg1", "fg2", "fg3".}
 
-\item{package}{Tutorial package. Default: learnr.proto (Functional Genomics)}
+\item{package}{Tutorial package. Default: "learnr.proto" (Functional Genomics)}
 
 \item{r_path}{Specify the R executable to use. Default: Same as current session}
 
-\item{r_args}{Specify the R flags to use. Default: --vanilla -q}
+\item{r_args}{Specify the R flags to use. Default: \code{--vanilla -q}}
 
 \item{host}{Rstudio Server IP address. Required if the server is not hosting on localhost. Automatically set for rstudio.science.ru.nl.}
 
-\item{port}{Specify the port to start the tutorial app on (must be free). Default: NULL (picks a free port for you)}
+\item{port}{Specify the port to start the tutorial app on (must be free). Default: \code{NULL} (picks a free port for you)}
 }
 \description{
-Background tutorials do not occupy the current session
+Start a background tutorial, which does not occupy the current session.
 }
-\details{
-Background tutorials should contain an inbuilt terminate on timeout,
-but can be stopped immediately with `learnr.dashboard::end_background_tutorial()`
+\note{
+Background tutorials can be stopped from the current session with \code{learnr.dashboard::end_background_tutorial()}
 
 Uses system calls which may not be platform independent.
+
+To see the available tutorials for any package, run \code{learnr::available_tutorials()}
 }
 \examples{
 learnr.dashboard::start_background_tutorial("fg1")
 
 learnr.dashboard::start_background_tutorial("fg2")
+
+learnr.dashboard::start_background_tutorial("fg3")
 }

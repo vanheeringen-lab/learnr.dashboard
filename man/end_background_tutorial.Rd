@@ -10,9 +10,9 @@ end_background_tutorial(...)
 \item{...}{Ignored.}
 }
 \description{
-Stop all learnr tutorials you are running in the background. Progress should be saved.
+Stop all learnr tutorials you are running in the background. Progress is saved.
 }
-\details{
+\note{
 Uses system calls which may not be platform independent.
 }
 \examples{

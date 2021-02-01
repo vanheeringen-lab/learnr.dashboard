@@ -4,20 +4,25 @@
 \alias{start_tutorial}
 \title{Start a learnr tutorial}
 \usage{
-start_tutorial(name, package = "learnr.proto", host = NULL)
+start_tutorial(name = NULL, package = "learnr.proto", host = NULL)
 }
 \arguments{
-\item{name}{Tutorial name. Available tutorials: "fg1", "fg2", "fg3", "fg4".}
+\item{name}{Tutorial name. Available tutorials: "fg1", "fg2", "fg3".}
 
-\item{package}{Tutorial package. Default: learnr.proto (Functional Genomics)}
+\item{package}{Tutorial package. Default: "learnr.proto" (Functional Genomics)}
 
 \item{host}{Rstudio Server IP address. Required if the server is not hosting on localhost. Automatically set for rstudio.science.ru.nl.}
 }
 \description{
 Start a learnr tutorial
 }
+\note{
+To see the available tutorials for any package, run \code{learnr::available_tutorials()}
+}
 \examples{
 learnr.dashboard::start_tutorial("fg1")
 
 learnr.dashboard::start_tutorial("fg2")
+
+learnr.dashboard::start_tutorial("fg3")
 }

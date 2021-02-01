@@ -1,14 +1,27 @@
 #' Start a learnr tutorial
 #'
-#' @param name Tutorial name. Available tutorials: "fg1", "fg2", "fg3", "fg4".
-#' @param package Tutorial package. Default: learnr.proto (Functional Genomics)
+#' @param name Tutorial name. Available tutorials: "fg1", "fg2", "fg3".
+#' @param package Tutorial package. Default: "learnr.proto" (Functional Genomics)
 #' @param host Rstudio Server IP address. Required if the server is not hosting on localhost. Automatically set for rstudio.science.ru.nl.
+#' @note To see the available tutorials for any package, run \code{learnr::available_tutorials()}
 #' @examples
 #' learnr.dashboard::start_tutorial("fg1")
 #'
 #' learnr.dashboard::start_tutorial("fg2")
+#'
+#' learnr.dashboard::start_tutorial("fg3")
 #' @export
-start_tutorial <- function(name, package = "learnr.proto", host = NULL) {
+start_tutorial <- function(name=NULL, package = "learnr.proto", host = NULL) {
+  if ( is.null(package) ){
+    tutorial_pacakges <- unique(learnr::available_tutorials()[[1]])
+    tp_string = paste0("\"",as.character(tutorial_pacakges),"\"",collapse=", ")
+    stop("No package selected.\n  Available packages: ", tp_string, ".\n")
+  }
+  if ( is.null(name) ){
+    package_tutorials <- learnr::available_tutorials(package)[[2]]
+    pt_string = paste0("\"",as.character(package_tutorials),"\"",collapse=", ")
+    stop("No tutorial selected.\n  Available tutorials for package ", package, ": ", pt_string, ".\n")
+  }
   if ( is.null(host) ){
     if ( Sys.info()["nodename"]=="rstudiovm" ) host <- "131.174.16.139"
   }
@@ -21,9 +34,9 @@ start_tutorial <- function(name, package = "learnr.proto", host = NULL) {
 
 #' Stop all background tutorials
 #'
-#' Stop all learnr tutorials you are running in the background. Progress should be saved.
+#' Stop all learnr tutorials you are running in the background. Progress is saved.
 #'
-#' Uses system calls which may not be platform independent.
+#' @note Uses system calls which may not be platform independent.
 #'
 #' @param ... Ignored.
 #' @examples
@@ -33,37 +46,52 @@ start_tutorial <- function(name, package = "learnr.proto", host = NULL) {
 #' @export
 end_background_tutorial <- function(...){
   cmd = "kill $(ps aux | grep [l]earnr.dashboard:::.run_tutorial | awk '{print $1, $2}' | grep $(whoami) | awk '{print $2}') > /dev/null 2>&1"
-  system(cmd, wait=FALSE)
+  system(cmd)
+  message("Hasta la vista, baby")
 }
 
-#' Start a learnr tutorial in the background
+#' @title Start a learnr tutorial in the background
 #'
-#' Background tutorials do not occupy the current session
+#' @description
+#' Start a background tutorial, which does not occupy the current session.
 #'
-#' Background tutorials should contain an inbuilt terminate on timeout,
-#' but can be stopped immediately with `learnr.dashboard::end_background_tutorial()`
+#' @note
+#' Background tutorials can be stopped from the current session with \code{learnr.dashboard::end_background_tutorial()}
 #'
 #' Uses system calls which may not be platform independent.
 #'
-#' @param name Tutorial name. Available tutorials: "fg1", "fg2", "fg3", "fg4".
-#' @param package Tutorial package. Default: learnr.proto (Functional Genomics)
+#' @param name Tutorial name. Available tutorials: "fg1", "fg2", "fg3".
+#' @param package Tutorial package. Default: "learnr.proto" (Functional Genomics)
 #' @param r_path Specify the R executable to use. Default: Same as current session
-#' @param r_args Specify the R flags to use. Default: --vanilla -q
+#' @param r_args Specify the R flags to use. Default: \code{--vanilla -q}
 #' @param host Rstudio Server IP address. Required if the server is not hosting on localhost. Automatically set for rstudio.science.ru.nl.
-#' @param port Specify the port to start the tutorial app on (must be free). Default: NULL (picks a free port for you)
+#' @param port Specify the port to start the tutorial app on (must be free). Default: \code{NULL} (picks a free port for you)
+#' @note To see the available tutorials for any package, run \code{learnr::available_tutorials()}
 #' @examples
 #' learnr.dashboard::start_background_tutorial("fg1")
 #'
 #' learnr.dashboard::start_background_tutorial("fg2")
+#'
+#' learnr.dashboard::start_background_tutorial("fg3")
 #' @export
-start_background_tutorial <- function(name, package = "learnr.proto", r_path = NULL, r_args = NULL, host = NULL, port = NULL) {
-  #' start tutorial from package in library as a background process.
-  #' the tutorial should contain an inbuilt terminate on session end/timeout.
-  #' example: learnr.dashboard:::start_background_tutorial("fg1")
+start_background_tutorial <- function(name=NULL, package = "learnr.proto", r_path = NULL, r_args = NULL, host = NULL, port = NULL) {
+  # dev note: the tutorial should contain an inbuilt terminate on session end/timeout.
+  # else it will keep running indefinitely
+
+  if ( is.null(package) ){
+    tutorial_pacakges <- unique(learnr::available_tutorials()[[1]])
+    tp_string = paste0("\"",as.character(tutorial_pacakges),"\"",collapse=", ")
+    stop("No package selected.\n  Available packages: ", tp_string, ".\n")
+  }
+  if ( is.null(name) ){
+    package_tutorials <- learnr::available_tutorials(package)[[2]]
+    pt_string = paste0("\"",as.character(package_tutorials),"\"",collapse=", ")
+    stop("No tutorial selected.\n  Available tutorials for package ", package, ": ", pt_string, ".\n")
+  }
 
   # check if a renv library is available
-  libpaths = learnr.dashboard:::.learnr_setup(load=F)
-  renv_lib = paste0("'", libpaths[1], "'")
+  renv_lib = learnr.dashboard:::get_renv_lib()
+  renv_lib = paste0("'", renv_lib, "'")
 
   # stores sdterr (app loaded/crashed messages)
   logfile <- tempfile("learnr_log_", tempdir(check=T))
@@ -98,7 +126,7 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
     r_path, " ", r_args, " -e \"",
     ".libPaths(", renv_lib,")",
     "; ",
-    "learnr.dashboard:::.learnr_setup()",
+    "learnr.dashboard:::set_tutorial_libraries()",
     "; ",
     "learnr.dashboard:::.run_tutorial('", name, "', '", package, "', shiny_args=", shiny_args, ")",
     "; ",
@@ -106,19 +134,19 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
     "\" 2> ", logfile , " 1> /dev/null"
   )
   system(cmd, wait=FALSE)
-  learnr.dashboard:::.open_browser(name, logfile)
+  learnr.dashboard:::open_browser(name, logfile)
 }
 
 #' @keywords internal
 .run_tutorial <- function (name = NULL, package = NULL, shiny_args = NULL)
 {
   #' re-implementation of learnr::run_tutorial.
-  #' ~~if the tutorial html file exists, learnr does not need to write anything.~~
-  #' ~~this version skips the write permission check if not required.~~
-  #' this version just removes the message.
+  #' this version does not change the directory to /tmp
+  #' while in /tmp, the tutorial could not find ./images
+  #' as a result, the tutorial .HTML file must be prerendered (and up to date!)
 
   if (is.null(package) && !is.null(name)) {
-    stop.("`package` must be provided if `name` is provided.")
+    stop("`package` must be provided if `name` is provided.")
   }
   tutorials <- learnr::available_tutorials(package = package)
   if (is.null(name)) {
@@ -462,7 +490,7 @@ start_background_tutorial <- function(name, package = "learnr.proto", r_path = N
 }
 
 #' @keywords internal
-.open_browser <- function(name, logfile) {
+open_browser <- function(name, logfile) {
   #' start a browser when the app has loaded
 
   cat("Loading ", name, "..")
