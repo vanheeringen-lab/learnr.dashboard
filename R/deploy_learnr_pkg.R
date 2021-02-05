@@ -27,17 +27,19 @@
 #' learnr.dashboard:::setup_learnr_pkg("fg3")
 #'
 #' learnr.dashboard:::setup_learnr_pkg(c("fg1", "fg2"))
-deploy_learnr_pkg <- function(tutorials=NULL, pkg=NULL, lib=NULL){
+deploy_learnr_pkg <- function(tutorials=NULL, pkg=NULL, lib=NULL, pull=TRUE){
   if (is.null(pkg)) pkg <- getwd()
   if (is.null(lib)) lib <- .libPaths()[1]
 
   if (!grepl(file.path("renv", "library"), lib, fixed=T)) stop("Function must be run in an active renv project.\n  Active lib: ", lib)
 
   # git pull
-  curr_dir <- getwd()
-  setwd(pkg)
-  system("git pull")
-  setwd(curr_dir)
+  if (pull){
+    curr_dir <- getwd()
+    setwd(pkg)
+    system("git pull")
+    setwd(curr_dir)
+  }
 
   # update renv
   renv::restore(prompt=F)
